@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>赛鸽育种谱系与近交分析站</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <div>
+      <h1>赛鸽育种谱系与近交分析站</h1>
+      <div class="subtitle">五代祖先 · 全部后代 · 重复/缺失/成环检测 · 近交系数 · 配对拦截 · 审计</div>
+    </div>
+    <nav>
+      <button data-tab="registry" class="active">档案登记</button>
+      <button data-tab="pedigree">谱系查询</button>
+      <button data-tab="inbreeding">近交分析</button>
+      <button data-tab="pairing">配对管理</button>
+      <button data-tab="audit">审计记录</button>
+    </nav>
+    <div class="threshold-box">
+      <label style="margin:0">近交门槛</label>
+      <input id="threshold" type="number" min="0" max="1" step="0.001" style="width:110px">
+      <button class="ghost" id="thresholdSave">保存</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- 档案登记 -->
+    <section class="tab active" id="tab-registry">
+      <div class="panel">
+        <h2>新建鸽只档案</h2>
+        <form id="pigeonForm">
+          <div class="form-row">
+            <div><label>足环号 *</label><input name="ringNo" required maxlength="64"></div>
+            <div><label>鸽主</label><input name="owner"></div>
+            <div><label>父鸽环号</label><input name="fatherRing" list="ringList"></div>
+            <div><label>母鸽环号</label><input name="motherRing" list="ringList"></div>
+            <div><label>羽色</label><input name="color"></div>
+            <div><label>出生棚号</label><input name="loft"></div>
+          </div>
+          <p><button class="primary" type="submit">保存档案</button></p>
+        </form>
+        <datalist id="ringList"></datalist>
+        <div id="registryMsg"></div>
+      </div>
+      <div class="panel">
+        <h2>在档鸽只 <span class="meta" id="pigeonCount"></span></h2>
+        <div style="overflow-x:auto"><table id="pigeonTable">
+          <thead><tr><th>足环号</th><th>鸽主</th><th>父</th><th>母</th><th>羽色/棚</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- 谱系查询 -->
+    <section class="tab" id="tab-pedigree">
+      <div class="panel">
+        <h2>谱系查询（最多五代祖先 + 全部后代）</h2>
+        <div class="form-row">
+          <div><label>足环号</label><input id="pedRing" list="ringList" placeholder="如 CHN-2026-001"></div>
+          <div style="align-self:end"><button class="primary" id="pedBtn">查询谱系</button></div>
+        </div>
+        <div id="pedMsg"></div>
+      </div>
+      <div id="pedResult"></div>
+    </section>
+
+    <!-- 近交分析 -->
+    <section class="tab" id="tab-inbreeding">
+      <div class="panel">
+        <h2>两羽配对近交系数分析</h2>
+        <div class="form-row">
+          <div><label>赛鸽 A</label><input id="inbA" list="ringList"></div>
+          <div><label>赛鸽 B</label><input id="inbB" list="ringList"></div>
+          <div style="align-self:end"><button class="primary" id="inbBtn">计算近交系数</button></div>
+        </div>
+        <p class="meta">按 Wright 路径公式计算，列出每个共同祖先的全部计入路径及贡献；每次分析写入审计。</p>
+        <div id="inbMsg"></div>
+      </div>
+      <div id="inbResult"></div>
+    </section>
+
+    <!-- 配对管理 -->
+    <section class="tab" id="tab-pairing">
+      <div class="panel">
+        <h2>建立配对记录</h2>
+        <div class="form-row">
+          <div><label>赛鸽 A</label><input id="pairA" list="ringList"></div>
+          <div><label>赛鸽 B</label><input id="pairB" list="ringList"></div>
+          <div><label>备注</label><input id="pairNote" placeholder="可选"></div>
+          <div style="align-self:end"><button class="primary" id="pairBtn">提交配对</button></div>
+        </div>
+        <p class="meta">自动拦截：同羽、父母-子女、祖孙、近交系数超过门槛（当前 <b id="pairThresholdText"></b>）。拦截与成功均写审计。</p>
+        <div id="pairMsg"></div>
+      </div>
+      <div class="panel">
+        <h2>历史配对记录</h2>
+        <div style="overflow-x:auto"><table id="pairTable">
+          <thead><tr><th>#</th><th>时间</th><th>A</th><th>B</th><th>近交系数</th><th>共同祖先数</th><th>备注</th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </div>
+    </section>
+
+    <!-- 审计 -->
+    <section class="tab" id="tab-audit">
+      <div class="panel">
+        <h2>审计记录</h2>
+        <div class="form-row">
+          <div><label>类型</label><select id="auditType">
+            <option value="">全部</option>
+            <option value="analysis">分析/设置</option>
+            <option value="pairing">配对</option>
+          </select></div>
+          <div style="align-self:end"><button class="ghost" id="auditReload">刷新</button></div>
+        </div>
+        <div style="overflow-x:auto;margin-top:12px"><table id="auditTable">
+          <thead><tr><th>#</th><th>时间</th><th>动作</th><th>结果</th><th>输入</th><th>详情</th></tr></thead>
+          <tbody></tbody>
+        </table></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>
