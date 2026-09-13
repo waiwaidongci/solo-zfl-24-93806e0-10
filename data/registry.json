@@ -27,6 +27,13 @@
           "distance": 120,
           "returnTime": "10:42",
           "rank": 18
+        },
+        {
+          "date": "2026-09-13",
+          "event": "300公里决赛",
+          "distance": 300,
+          "returnTime": "",
+          "rank": 7
         }
       ]
     },
